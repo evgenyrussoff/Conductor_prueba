@@ -1,0 +1,122 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a6f43"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>App Conductor</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,sans-serif;background:#f3f6f4;color:#13261c;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body.h{background:linear-gradient(#0007,#000b),url(camion.jpg) center/cover fixed;min-height:100vh}
+.s{display:none;padding:14px;max-width:560px;margin:auto}.s.on{display:block}
+.c{background:#fff;border-radius:14px;padding:12px;margin:10px 0;box-shadow:0 2px 8px #0002}
+button,.b{font:inherit;border:0;border-radius:12px;padding:12px;background:#0a6f43;color:#fff;width:100%;margin:4px 0;display:block;text-align:center;text-decoration:none}
+button:disabled{opacity:.4}.b2{background:#dfe9e3;color:#13261c}.r{background:#b3261e}
+[data-e]::before{content:attr(data-e) " "}
+input,select{font:inherit;width:100%;padding:10px;margin:3px 0 8px;border:1px solid #bcc9c1;border-radius:10px}
+input[type=checkbox]{width:auto;margin:6px}label{font-size:.85rem;color:#4b5f54}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.k{font-size:1.6rem;font-weight:700}
+.w{display:flex;gap:4px;text-align:center}.w div{flex:1;background:#eef3f0;border-radius:10px;padding:6px 1px;font-size:.78rem}.w .t{outline:2px solid #0a6f43}
+.bad{color:#b3261e}.warn{color:#b26a00}small{color:#5b6e63}h2,h3,h4{margin:10px 0 4px}body.h h2{color:#fff}
+#ts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#13261c;color:#fff;padding:10px 16px;border-radius:20px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
+</style></head><body>
+<div id="home" class="s on">
+<button id="pl" class="b2" onclick="show('set')" style="font-size:1.5rem;font-weight:700"></button>
+<div class="c"><small id="tl"></small><div class="k" id="tm">—</div><small id="st"></small></div>
+<div class="g"><button id="bs" onclick="openJ('s')">Iniciar jornada</button><button id="bf" class="r" onclick="openJ('f')">Finalizar jornada</button></div>
+<div class="g"><button data-e="📋" onclick="show('hist')">Historial</button><button data-e="⛽" onclick="show('fuel')">Repostajes</button><button data-e="📊" onclick="show('stats')">Estadísticas</button><button data-e="🕘" onclick="show('tach')">Tacógrafo</button></div>
+<a class="b" data-e="🚧" href="https://payonline.guretruck.com/Restrictions/Restrictions.aspx/GetRestricciones" target="_blank" rel="noopener">Restricciones para camiones</a>
+<button class="b2" data-e="⚙" onclick="show('set')">Ajustes</button></div>
+
+<div id="jv" class="s"><h2 id="jt"></h2><form id="jf" class="c"><input type="hidden" id="jm">
+<label>Fecha y hora</label><input type="datetime-local" id="jd" required>
+<label>Kilómetros (odómetro)</label><input type="number" id="jk" required inputmode="numeric">
+<label>Lugar</label><input id="jp" required>
+<label>GPS</label><input id="jg" readonly placeholder="lat, lng"><button type="button" class="b2" data-e="📍" onclick="gps()">Obtener ubicación</button>
+<div id="jx"><label>Horas conducidas (H:MM)</label><input id="jh" inputmode="numeric" placeholder="8:30"><label>Notas</label><input id="jn"></div>
+<button>Guardar</button><button type="button" class="b2" onclick="show('home')">← Inicio</button></form></div>
+
+<div id="hist" class="s"><button class="b2" onclick="show('home')">← Inicio</button><h2>Historial</h2><div id="hx"></div></div>
+
+<div id="fuel" class="s"><button class="b2" onclick="show('home')">← Inicio</button><h2>Repostajes</h2>
+<form id="ff" class="c"><label>Fecha</label><input type="date" id="fd" required><label>Lugar</label><input id="fp" required>
+<div class="g"><div><label>Kilómetros</label><input type="number" id="fk" required></div><div><label>Litros</label><input type="number" step="0.01" id="fl" required></div></div>
+<label><input type="checkbox" id="fc"><span>Depósito lleno</span></label><button>Guardar</button></form><div id="fx"></div></div>
+
+<div id="stats" class="s"><button class="b2" onclick="show('home')">← Inicio</button><h2>Estadísticas</h2><div id="sx"></div>
+<div class="c"><label>Periodo de facturación: día de inicio</label><select id="pd" onchange="S.periodDay=+this.value;save();rStats()"></select></div></div>
+
+<div id="tach" class="s"><button class="b2" onclick="show('home')">← Inicio</button><h2>Tacógrafo</h2><div id="tx"></div>
+<form id="mf" class="c"><b>Introducir lecturas reales del tacógrafo</b><div class="g"><div><label>Semanal (H:MM)</label><input id="mw" inputmode="numeric"></div><div><label>Bisemanal (H:MM)</label><input id="mb" inputmode="numeric"></div></div><button>Actualizar</button></form>
+<small>Datos orientativos: no sustituyen al tacógrafo.</small></div>
+
+<div id="set" class="s"><button class="b2" onclick="show('home')">← Inicio</button><h2>Ajustes</h2>
+<form id="sf" class="c"><label>Matrícula</label><input id="sp" required>
+<div id="ix"><b>Datos iniciales del tacógrafo</b><label>Conducción semanal (H:MM)</label><input id="iw" inputmode="numeric"><label>Conducción bisemanal (H:MM)</label><input id="ib" inputmode="numeric"><label>Descansos diarios reducidos usados (0-3)</label><input id="ir" type="number" min="0" max="3" value="0"><label>Ampliaciones de 10 h usadas (0-2)</label><input id="it" type="number" min="0" max="2" value="0"><label>Fin del último descanso semanal</label><input id="ie" type="datetime-local"></div><button>Guardar</button></form>
+<div class="c"><b>Reiniciar datos</b><br><label><input type="checkbox" id="rk"><span>Kilómetros</span></label><label><input type="checkbox" id="rs"><span>Velocidad media</span></label><label><input type="checkbox" id="rf"><span>Consumo</span></label><label><input type="checkbox" id="rj"><span>Jornadas (afecta al tacógrafo)</span></label><button id="rb" class="r">Reiniciar seleccionados</button></div>
+<div class="c"><b>Copia de seguridad</b><button id="exp" class="b2" data-e="⬇">Exportar copia</button><button class="b2" data-e="⬆" onclick="$('imp').click()">Importar copia</button><input type="file" id="imp" accept=".json" hidden></div></div>
+<div id="ts"></div>
+<script>
+const $=i=>document.getElementById(i),K='conductorApp.v6',L=(navigator.language||'es').slice(0,2),z=n=>String(n).padStart(2,'0'),D=x=>new Date(x);
+const T={en:{'Iniciar jornada':'Start shift','Finalizar jornada':'End shift','Historial':'History','Repostajes':'Refuelling','Estadísticas':'Statistics','Tacógrafo':'Tachograph','Restricciones para camiones':'Truck restrictions','Ajustes':'Settings','← Inicio':'← Home','Fecha y hora':'Date and time','Kilómetros (odómetro)':'Kilometres (odometer)','Lugar':'Place','Obtener ubicación':'Get location','Horas conducidas (H:MM)':'Driving time (H:MM)','Notas':'Notes','Guardar':'Save','Fecha':'Date','Kilómetros':'Kilometres','Litros':'Litres','Depósito lleno':'Full tank','Periodo de facturación: día de inicio':'Billing period: start day','Introducir lecturas reales del tacógrafo':'Enter real tachograph readings','Semanal (H:MM)':'Weekly (H:MM)','Bisemanal (H:MM)':'Biweekly (H:MM)','Actualizar':'Update','Datos orientativos: no sustituyen al tacógrafo.':'Indicative data: it does not replace the tachograph.','Matrícula':'Licence plate','Datos iniciales del tacógrafo':'Initial tachograph data','Conducción semanal (H:MM)':'Weekly driving (H:MM)','Conducción bisemanal (H:MM)':'Biweekly driving (H:MM)','Descansos diarios reducidos usados (0-3)':'Reduced daily rests used (0-3)','Ampliaciones de 10 h usadas (0-2)':'10 h extensions used (0-2)','Fin del último descanso semanal':'End of last weekly rest','Reiniciar datos':'Reset data','Velocidad media':'Average speed','Consumo':'Consumption','Jornadas (afecta al tacógrafo)':'Shifts (affects tachograph)','Reiniciar seleccionados':'Reset selected','Copia de seguridad':'Backup','Exportar copia':'Export backup','Importar copia':'Import backup','Jornada actual':'Current shift','Pausa desde la última jornada':'Break since last shift','Inicio':'Start','Fin última jornada':'Last shift ended','Sin jornadas':'No shifts','días':'days','Abierta':'Open','Conducción':'Driving','Duración':'Duration','Lleno':'Full','¿Eliminar?':'Delete?','Km del periodo':'Period km','Km del año':'Year km','Km totales':'Total km','Consumo medio total':'Average consumption','Consumo por meses (aprox.)':'Consumption by month (approx.)','Km por periodo 26-25':'Km per billing period','Conducción semanal':'Weekly driving','Conducción bisemanal':'Biweekly driving','Disponible ahora':'Available now','Descansos diarios reducidos':'Reduced daily rests','Ampliaciones de 10 h':'10 h extensions','Compensación pendiente':'Pending compensation','Se toma completa con un descanso semanal':'Take it in one block with a weekly rest','Ninguna':'None','Empezar descanso semanal antes de':'Start weekly rest before','Descansos semanales':'Weekly rests','Semana actual':'Current week','Revisa los datos':'Check the data','No se pudo obtener la ubicación':'Could not get location','GPS no disponible':'GPS not available','Cierra la jornada antes de actualizar':'End the shift before updating','Valores no válidos':'Invalid values','Revisa conducción semanal y bisemanal':'Check weekly and biweekly driving','Datos reiniciados':'Data reset','Cierra la jornada abierta primero':'End the open shift first','Archivo no válido':'Invalid file','Copia importada':'Backup imported','¿Reiniciar los datos seleccionados?':'Reset the selected data?','Se sustituirán los datos actuales. ¿Continuar?':'Current data will be replaced. Continue?','La jornada cruza de domingo a lunes. Introduce las horas semanales y bisemanales reales de tu tacógrafo.':'The shift crosses Sunday to Monday. Enter the real weekly and biweekly hours from your tachograph.','Descanso semanal vencido':'Weekly rest overdue'}};
+const tr=s=>(T[L]&&T[L][s])||s,esc=s=>String(s||'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+let S=JSON.parse(localStorage.getItem(K)||'null')||{plate:'',journeys:[],fuels:[],periodDay:26,resets:{},tach:{}};
+const save=()=>{localStorage.setItem(K,JSON.stringify(S));home()},toast=m=>{const t=$('ts');t.textContent=tr(m);t.style.opacity=1;clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.opacity=0,2600)};
+const nowIn=()=>{const d=new Date();return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`};
+const fmt=x=>x?D(x).toLocaleString(L,{dateStyle:'short',timeStyle:'short'}):'—',hm=m=>{m=Math.max(0,Math.round(m));return Math.floor(m/60)+':'+z(m%60)};
+const pm=v=>{v=String(v).trim();const m=/^(\d+):(\d{2})$/.exec(v);return m?m[1]*60+ +m[2]:v===''?NaN:Number(v.replace(',','.'))*60};
+const wsf=d=>{const x=D(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-(x.getDay()+6)%7);return x},ad=(d,n)=>{const x=D(d);x.setDate(x.getDate()+n);return x};
+const op=()=>S.journeys.find(j=>!j.e),by=(a,b)=>a.s.d<b.s.d?-1:1,cl=()=>S.journeys.filter(j=>j.e).sort(by),kmj=j=>j.e.km-j.s.km,av=j=>(D(j.e.d)-D(j.s.d))/6e4;
+const mp=g=>g?` <a href="https://www.google.com/maps?q=${encodeURIComponent(g)}" target="_blank" rel="noopener">📍</a>`:'';
+const R={hist:rHist,fuel:rFuel,stats:rStats,tach:rTach,set:rSet};
+function show(id){document.querySelectorAll('.s').forEach(e=>e.classList.toggle('on',e.id==id));document.body.classList.toggle('h',id=='home');scrollTo(0,0);R[id]&&R[id]()}
+function home(){const o=op(),l=cl().at(-1);$('pl').textContent=S.plate||'---';$('st').textContent=o?tr('Inicio')+': '+fmt(o.s.d):l?tr('Fin última jornada')+': '+fmt(l.e.d):tr('Sin jornadas');$('bs').disabled=!!o;$('bf').disabled=!o;tick()}
+function tick(){const o=op(),l=cl().at(-1),r=o?o.s.d:l&&l.e.d;$('tl').textContent=tr(o?'Jornada actual':'Pausa desde la última jornada');if(!r){$('tm').textContent='—';return}const m=(Date.now()-D(r))/6e4;$('tm').textContent=hm(m)+' h'+(!o&&m>4320?` (${(m/1440).toFixed(1)} ${tr('días')})`:'')}
+function openJ(m){$('jm').value=m;$('jt').textContent=tr(m=='s'?'Iniciar jornada':'Finalizar jornada');$('jx').style.display=m=='f'?'block':'none';$('jh').required=m=='f';$('jd').value=nowIn();['jk','jp','jg','jh','jn'].forEach(i=>$(i).value='');show('jv')}
+function gps(){navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>$('jg').value=p.coords.latitude.toFixed(6)+', '+p.coords.longitude.toFixed(6),()=>toast('No se pudo obtener la ubicación'),{enableHighAccuracy:true,timeout:15000}):toast('GPS no disponible')}
+$('jf').onsubmit=e=>{e.preventDefault();const m=$('jm').value,o={d:$('jd').value,km:+$('jk').value,pl:$('jp').value.trim(),g:$('jg').value};
+if(m=='s'){const l=cl().at(-1);if(l&&o.d<l.e.d)return toast('Revisa los datos');S.journeys.push({id:Date.now(),s:o,e:null});save();return show('home')}
+const j=op(),dr=pm($('jh').value);if(!j||o.d<=j.s.d||o.km<j.s.km||isNaN(dr)||dr>(D(o.d)-D(j.s.d))/6e4)return toast('Revisa los datos');
+j.e=o;j.drive=dr;j.note=$('jn').value.trim();save();const s=D(j.s.d),f=D(o.d);
+if(s.getDay()==0&&f.getDay()==1&&(f.getHours()>2||f.getHours()==2&&f.getMinutes()>0)){alert(tr('La jornada cruza de domingo a lunes. Introduce las horas semanales y bisemanales reales de tu tacógrafo.'));show('tach');$('mw').focus()}else show('home')};
+function rHist(){let h='',y=null,m=null;S.journeys.slice().sort((a,b)=>by(b,a)).forEach(j=>{const d=D(j.s.d),yy=d.getFullYear(),mm=d.getMonth();
+if(yy!==y){y=yy;m=null;h+=`<h3>${y}</h3>`}if(mm!==m){m=mm;h+=`<h4>${d.toLocaleDateString(L,{month:'long'})}</h4>`}
+h+=`<details class="c"><summary>${d.toLocaleDateString(L,{day:'2-digit',month:'short'})} · ${j.e?kmj(j)+' km · '+hm(j.drive)+' h':tr('Abierta')}</summary><p>▶ ${fmt(j.s.d)} · ${j.s.km} km<br>${esc(j.s.pl)}${mp(j.s.g)}</p>`+(j.e?`<p>■ ${fmt(j.e.d)} · ${j.e.km} km<br>${esc(j.e.pl)}${mp(j.e.g)}</p><p>${tr('Conducción')}: ${hm(j.drive)} h · ${tr('Duración')}: ${hm(av(j))} h</p>${j.note?`<p>📝 ${esc(j.note)}</p>`:''}`:'')+'</details>'});$('hx').innerHTML=h||'<p>'+tr('Sin jornadas')+'</p>'}
+function rFuel(){$('fd').value=nowIn().slice(0,10);$('fx').innerHTML=S.fuels.slice().sort((a,b)=>a.d<b.d?1:-1).map(f=>`<div class="c">${D(f.d+'T12:00').toLocaleDateString(L)} · ${esc(f.pl)}<br>${f.km} km · ${f.l} L${f.full?' ✓ '+tr('Lleno'):''} <button class="b2" style="width:auto;display:inline;padding:2px 10px" onclick="delF(${f.id})">✕</button></div>`).join('')}
+function delF(id){if(confirm(tr('¿Eliminar?'))){S.fuels=S.fuels.filter(f=>f.id!=id);save();rFuel()}}
+$('ff').onsubmit=e=>{e.preventDefault();S.fuels.push({id:Date.now(),d:$('fd').value,pl:$('fp').value.trim(),km:+$('fk').value,l:+$('fl').value,full:$('fc').checked});save();e.target.reset();rFuel()};
+const af=(k,t)=>!S.resets[k]||D(t)>=D(S.resets[k]),pS=d=>{d=D(d);const p=S.periodDay;return d.getDate()>=p?new Date(d.getFullYear(),d.getMonth(),p):new Date(d.getFullYear(),d.getMonth()-1,p)};
+function rStats(){const c=cl().filter(j=>af('km',j.e.d)),now=new Date(),sum=a=>a.reduce((s,j)=>s+kmj(j),0),nf=x=>x.toLocaleString(L),per={};
+c.forEach(j=>{const k=pS(j.e.d).getTime();per[k]=(per[k]||0)+kmj(j)});
+const kc=(l,v)=>`<div class="c"><small>${tr(l)}</small><div class="k">${v}</div></div>`,sp=cl().filter(j=>af('speed',j.e.d)),dr=sp.reduce((s,j)=>s+j.drive,0);
+const f=S.fuels.filter(x=>af('fuel',x.d)).sort((a,b)=>a.km-b.km),fu=f.filter(x=>x.full);let cons='—';
+if(fu.length>1){const lit=f.slice(f.indexOf(fu[0])+1,f.indexOf(fu.at(-1))+1).reduce((s,x)=>s+x.l,0),k=fu.at(-1).km-fu[0].km;if(k>0)cons=(lit/k*100).toFixed(1)+' L/100 km'}
+const mo={},g=k=>mo[k]=mo[k]||{l:0,k:0};f.forEach(x=>g(x.d.slice(0,7)).l+=x.l);cl().filter(j=>af('fuel',j.e.d)).forEach(j=>g(j.e.d.slice(0,7)).k+=kmj(j));
+const pe=k=>{const s=D(+k);return s.toLocaleDateString(L)+' → '+ad(new Date(s.getFullYear(),s.getMonth()+1,S.periodDay),-1).toLocaleDateString(L)};
+$('sx').innerHTML=kc('Km del periodo',nf(per[pS(now).getTime()]||0)+' km')+`<div class="g">${kc('Km del año',nf(sum(c.filter(j=>D(j.e.d).getFullYear()==now.getFullYear())))+' km')}${kc('Km totales',nf(sum(c))+' km')}</div>`
++`<div class="g">${kc('Velocidad media',dr?(sum(sp)/(dr/60)).toFixed(1)+' km/h':'—')}${kc('Consumo medio total',cons)}</div>`
++`<div class="c"><b>${tr('Km por periodo 26-25')}</b>${Object.keys(per).sort((a,b)=>b-a).map(k=>`<br>${pe(k)}: ${nf(per[k])} km`).join('')}</div>`
++`<div class="c"><b>${tr('Consumo por meses (aprox.)')}</b>${Object.keys(mo).sort().reverse().filter(k=>mo[k].l&&mo[k].k).map(k=>`<br>${k}: ${(mo[k].l/mo[k].k*100).toFixed(1)} L/100 km`).join('')}</div>`;$('pd').value=S.periodDay}
+function tach(){const t0=S.tach,i=t0.init,mw=t0.manual,c=cl(),all=S.journeys.slice().sort(by),w=wsf(new Date());
+const wk=a=>{const e=ad(a,7),sm=c.filter(j=>D(j.s.d)>=a&&D(j.s.d)<e),s=l=>l.reduce((x,j)=>x+j.drive,0);if(mw){const m=wsf(mw.at).getTime();if(m==a.getTime())return mw.weekly+s(sm.filter(j=>D(j.s.d)>=D(mw.at)));if(m==e.getTime())return mw.prev}return s(sm)};
+const rs=[];for(let k=0;k<all.length-1;k++){const a=all[k],b=all[k+1];if(a.e){const m=(D(b.s.d)-D(a.e.d))/6e4;if(m>=1440)rs.push({s:a.e.d,e:b.s.d,m})}}
+let pend=[];rs.forEach(r=>{let x=r.m-2700;if(x<0)pend.push(-x);else pend=pend.filter(q=>q>x?true:(x-=q,false))});
+const lr=rs.at(-1),det=lr&&(!i||!i.restEnd||D(lr.e)>D(i.restEnd)),re=det?lr.e:i&&i.restEnd||null,from=det?D(re):i?Math.max(i.restEnd?D(i.restEnd):0,D(i.at)):0;
+let red=det?0:i?+i.reduced||0:0;all.forEach((j,k)=>{if(!j.e||D(j.e.d)<=from)return;const n=all[k+1],g=n?(D(n.s.d)-D(j.e.d))/6e4:null;if(av(j)>780||g!=null&&g>=540&&g<660)red++});
+const inW=i&&D(i.at)>=w,ten=(inW?+i.ten||0:0)+c.filter(j=>D(j.s.d)>=(inW?D(i.at):w)&&D(j.s.d)<ad(w,7)&&j.drive>540).length;
+return{wk:wk(w),bi:wk(w)+wk(ad(w,-7)),ten,red,comp:pend.reduce((a,b)=>a+b,0),re,rs,w,c}}
+function rTach(){const X=tach(),left=Math.min(3360-X.wk,5400-X.bi),cl2=(a,b)=>a>=b?'bad':b-a<=600?'warn':'',kc=(l,v,x='')=>`<div class="c"><small>${tr(l)}</small><div class="k ${x}">${v}</div></div>`;
+let wv='';for(let d=0;d<7;d++){const a=ad(X.w,d),n=ad(a,1),dr=X.c.filter(j=>D(j.s.d)>=a&&D(j.s.d)<n).reduce((s,j)=>s+j.drive,0),r=X.rs.some(q=>D(q.s)<n&&D(q.e)>a);
+wv+=`<div class="${a.toDateString()==new Date().toDateString()?'t':''}">${a.toLocaleDateString(L,{weekday:'short'})}<br>${dr?'🚚<br>'+hm(dr):''}${r?'🕐':''}${dr||r?'':'·'}</div>`}
+const dl=X.re?new Date(D(X.re).getTime()+6*864e5):null;
+$('tx').innerHTML=`<div class="g">${kc('Conducción semanal',hm(X.wk)+' / 56:00',cl2(X.wk,3360))}${kc('Conducción bisemanal',hm(X.bi)+' / 90:00',cl2(X.bi,5400))}</div>`
++kc('Disponible ahora',hm(left)+' h',left<=600?'warn':'')+`<div class="g">${kc('Descansos diarios reducidos',X.red+' / 3',X.red>=3?'bad':'')}${kc('Ampliaciones de 10 h',X.ten+' / 2',X.ten>=2?'warn':'')}</div>`
++kc('Compensación pendiente',X.comp?hm(X.comp)+' h':tr('Ninguna'))+(X.comp?`<small>${tr('Se toma completa con un descanso semanal')}</small>`:'')
++kc('Empezar descanso semanal antes de',dl?fmt(dl):'—',dl&&dl<new Date()?'bad':'')+`<div class="c"><b>${tr('Semana actual')}</b><div class="w">${wv}</div></div>`
++`<div class="c"><b>${tr('Descansos semanales')}</b>${X.rs.slice(-4).reverse().map(r=>`<br>${fmt(r.s)} → ${fmt(r.e)} · ${hm(r.m)} h${r.m<2700?' ⚠':''}`).join('')}</div>`}
+$('mf').onsubmit=e=>{e.preventDefault();if(op())return toast('Cierra la jornada antes de actualizar');const a=pm($('mw').value),b=pm($('mb').value);if(isNaN(a)||isNaN(b)||a>3360||b>5400||b<a)return toast('Valores no válidos');S.tach.manual={at:new Date().toISOString(),weekly:a,prev:b-a};save();e.target.reset();rTach()};
+function rSet(){$('sp').value=S.plate;$('ix').style.display=S.plate?'none':'block'}
+$('sp').oninput=()=>$('ix').style.display=$('sp').value.trim().toUpperCase()!=S.plate?'block':'none';
+$('sf').onsubmit=e=>{e.preventDefault();const p=$('sp').value.trim().toUpperCase();if(p!=S.plate){const w=pm($('iw').value),b=pm($('ib').value);if(isNaN(w)||isNaN(b)||w>3360||b>5400||b<w)return toast('Revisa conducción semanal y bisemanal');const at=new Date().toISOString();S.tach={manual:{at,weekly:w,prev:b-w},init:{at,ten:+$('it').value||0,reduced:+$('ir').value||0,restEnd:$('ie').value||null}};['iw','ib','ie'].forEach(x=>$(x).value='')}S.plate=p;save();show('home')};
+$('rb').onclick=()=>{const ids=['rk','rs','rf','rj'];if(!ids.some(i=>$(i).checked)||!confirm(tr('¿Reiniciar los datos seleccionados?')))return;if($('rj').checked&&op())return toast('Cierra la jornada abierta primero');const n=new Date().toISOString();[['rk','km'],['rs','speed'],['rf','fuel']].forEach(([i,k])=>$(i).checked&&(S.resets[k]=n));if($('rj').checked)S.journeys=[];ids.forEach(i=>$(i).checked=false);save();toast('Datos reiniciados')};
+$('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'conductor',v:6,data:S})],{type:'application/json'}));a.download='copia-conductor-'+nowIn().slice(0,10)+'.json';a.click()};
+const migrate=d=>({plate:d.truckPlate||'',periodDay:Math.min(28,d.statsPeriodStartDay||26),resets:{},tach:{},fuels:d.fuels.map(f=>({id:Math.random(),d:f.dateOnly||String(f.date).slice(0,10),pl:f.place||'',km:f.km,l:f.liters,full:!!f.full})),journeys:d.journeys.map(j=>({id:j.id,s:{d:j.startDate.slice(0,16),km:j.startKm,pl:j.startPlace||'',g:j.startLat?j.startLat+', '+j.startLng:''},e:j.endDate?{d:j.endDate.slice(0,16),km:j.endKm,pl:j.endPlace||'',g:j.endLat?j.endLat+', '+j.endLng:''}:null,drive:j.driveMin||0,note:j.note||''}))});
+$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);d=d.data||d;if(!Array.isArray(d.journeys)||!Array.isArray(d.fuels))throw 0;if(d.journeys.some(j=>j.startDate))d=migrate(d);if(!confirm(tr('Se sustituirán los datos actuales. ¿Continuar?')))return;S=Object.assign({plate:'',periodDay:26,resets:{},tach:{}},d);save();toast('Copia importada')}catch(x){toast('Archivo no válido')}e.target.value=''};r.readAsText(f)};
+for(let i=1;i<=28;i++)$('pd').add(new Option(i,i));
+if(T[L])document.querySelectorAll('h2,label,button,a,span,small,b,summary').forEach(e=>{if(!e.children.length){const s=e.textContent.trim();if(T[L][s])e.textContent=T[L][s]}});
+document.documentElement.lang=T[L]?L:'es';home();if(!S.plate)show('set');setInterval(tick,30000);if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+</script></body></html>
