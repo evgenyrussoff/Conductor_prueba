@@ -1,11 +1,14 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a6f43"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>App Conductor</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font:16px system-ui,sans-serif;background:#f3f6f4;color:#13261c;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-body.h{background:linear-gradient(#0007,#000b),url(camion.jpg) center/cover fixed;min-height:100vh}
+body.h{background:linear-gradient(#0000 40%,#000b),url(camion.jpg) 88% 78%/cover fixed;min-height:100vh}
 .s{display:none;padding:14px;max-width:560px;margin:auto}.s.on{display:block}
 .c{background:#fff;border-radius:14px;padding:12px;margin:10px 0;box-shadow:0 2px 8px #0002}
-button,.b{font:inherit;border:0;border-radius:12px;padding:12px;background:#0a6f43;color:#fff;width:100%;margin:4px 0;display:block;text-align:center;text-decoration:none}
-button:disabled{opacity:.4}.b2{background:#dfe9e3;color:#13261c}.r{background:#b3261e}
+button,.b{font:inherit;font-weight:600;border:0;border-radius:14px;padding:13px;background:linear-gradient(#1aa266,#0a6f43);color:#fff;width:100%;margin:4px 0 10px;display:block;text-align:center;text-decoration:none;text-shadow:0 1px 1px #0005;box-shadow:inset 0 1px 0 #fff6,0 4px 0 #064a2c,0 7px 10px #0004;transition:transform .08s,box-shadow .08s}
+button:active,.b:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #fff6,0 1px 0 #064a2c,0 2px 4px #0004}
+button:disabled{opacity:.45}.b2{background:linear-gradient(#fff,#cfdad3);color:#13261c;text-shadow:none;box-shadow:inset 0 1px 0 #fff,0 4px 0 #9db0a5,0 7px 10px #0003}.r{background:linear-gradient(#e0554b,#b3261e);box-shadow:inset 0 1px 0 #fff6,0 4px 0 #7a1912,0 7px 10px #0004}
+.sm{padding:8px;font-size:.82rem}
+#home.on{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}#pl{width:auto;align-self:flex-end;padding:8px 16px;margin:0}#hb{margin-top:auto}#hb .c{background:#ffffffd9}
 [data-e]::before{content:attr(data-e) " "}
 input,select{font:inherit;width:100%;padding:10px;margin:3px 0 8px;border:1px solid #bcc9c1;border-radius:10px}
 input[type=checkbox]{width:auto;margin:6px}label{font-size:.85rem;color:#4b5f54}
@@ -15,12 +18,11 @@ input[type=checkbox]{width:auto;margin:6px}label{font-size:.85rem;color:#4b5f54}
 #ts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#13261c;color:#fff;padding:10px 16px;border-radius:20px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
 </style></head><body>
 <div id="home" class="s on">
-<button id="pl" class="b2" onclick="show('set')" style="font-size:1.5rem;font-weight:700"></button>
-<div class="c"><small id="tl"></small><div class="k" id="tm">—</div><small id="st"></small></div>
+<button id="pl" class="b2" onclick="show('set')" style="font-size:1.1rem;font-weight:700"></button>
+<div id="hb"><div class="c"><small id="tl"></small><div class="k" id="tm">—</div><small id="st"></small></div>
 <div class="g"><button id="bs" onclick="openJ('s')">Iniciar jornada</button><button id="bf" class="r" onclick="openJ('f')">Finalizar jornada</button></div>
 <div class="g"><button data-e="📋" onclick="show('hist')">Historial</button><button data-e="⛽" onclick="show('fuel')">Repostajes</button><button data-e="📊" onclick="show('stats')">Estadísticas</button><button data-e="🕘" onclick="show('tach')">Tacógrafo</button></div>
-<a class="b" data-e="🚧" href="https://payonline.guretruck.com/Restrictions/Restrictions.aspx/GetRestricciones" target="_blank" rel="noopener">Restricciones para camiones</a>
-<button class="b2" data-e="⚙" onclick="show('set')">Ajustes</button></div>
+<div class="g"><button class="b2 sm" data-e="⚙" onclick="show('set')">Ajustes</button><a class="b b2 sm" data-e="🚧" href="https://payonline.guretruck.com/Restrictions/Restrictions.aspx/GetRestricciones" target="_blank" rel="noopener">Restricciones para camiones</a></div></div></div>
 
 <div id="jv" class="s"><h2 id="jt"></h2><form id="jf" class="c"><input type="hidden" id="jm">
 <label>Fecha y hora</label><input type="datetime-local" id="jd" required>
@@ -58,7 +60,7 @@ let S=JSON.parse(localStorage.getItem(K)||'null')||{plate:'',journeys:[],fuels:[
 const save=()=>{localStorage.setItem(K,JSON.stringify(S));home()},toast=m=>{const t=$('ts');t.textContent=tr(m);t.style.opacity=1;clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.opacity=0,2600)};
 const nowIn=()=>{const d=new Date();return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`};
 const fmt=x=>x?D(x).toLocaleString(L,{dateStyle:'short',timeStyle:'short'}):'—',hm=m=>{m=Math.max(0,Math.round(m));return Math.floor(m/60)+':'+z(m%60)};
-const pm=v=>{v=String(v).trim();const m=/^(\d+):(\d{2})$/.exec(v);return m?m[1]*60+ +m[2]:v===''?NaN:Number(v.replace(',','.'))*60};
+const pm=v=>{v=String(v).trim();const m=/^(\d+):(\d{2})$/.exec(v);return m?(+m[2]<60?m[1]*60+ +m[2]:NaN):v===''?NaN:Number(v.replace(',','.'))*60};
 const wsf=d=>{const x=D(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-(x.getDay()+6)%7);return x},ad=(d,n)=>{const x=D(d);x.setDate(x.getDate()+n);return x};
 const op=()=>S.journeys.find(j=>!j.e),by=(a,b)=>a.s.d<b.s.d?-1:1,cl=()=>S.journeys.filter(j=>j.e).sort(by),kmj=j=>j.e.km-j.s.km,av=j=>(D(j.e.d)-D(j.s.d))/6e4;
 const mp=g=>g?` <a href="https://www.google.com/maps?q=${encodeURIComponent(g)}" target="_blank" rel="noopener">📍</a>`:'';
@@ -116,6 +118,7 @@ $('rb').onclick=()=>{const ids=['rk','rs','rf','rj'];if(!ids.some(i=>$(i).checke
 $('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'conductor',v:6,data:S})],{type:'application/json'}));a.download='copia-conductor-'+nowIn().slice(0,10)+'.json';a.click()};
 const migrate=d=>({plate:d.truckPlate||'',periodDay:Math.min(28,d.statsPeriodStartDay||26),resets:{},tach:{},fuels:d.fuels.map(f=>({id:Math.random(),d:f.dateOnly||String(f.date).slice(0,10),pl:f.place||'',km:f.km,l:f.liters,full:!!f.full})),journeys:d.journeys.map(j=>({id:j.id,s:{d:j.startDate.slice(0,16),km:j.startKm,pl:j.startPlace||'',g:j.startLat?j.startLat+', '+j.startLng:''},e:j.endDate?{d:j.endDate.slice(0,16),km:j.endKm,pl:j.endPlace||'',g:j.endLat?j.endLat+', '+j.endLng:''}:null,drive:j.driveMin||0,note:j.note||''}))});
 $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);d=d.data||d;if(!Array.isArray(d.journeys)||!Array.isArray(d.fuels))throw 0;if(d.journeys.some(j=>j.startDate))d=migrate(d);if(!confirm(tr('Se sustituirán los datos actuales. ¿Continuar?')))return;S=Object.assign({plate:'',periodDay:26,resets:{},tach:{}},d);save();toast('Copia importada')}catch(x){toast('Archivo no válido')}e.target.value=''};r.readAsText(f)};
+['jh','iw','ib','mw','mb'].forEach(i=>{const e=$(i);e.inputMode='numeric';e.oninput=()=>{const d=e.value.replace(/\D/g,'').slice(0,5);e.value=d.length>2?d.slice(0,-2)+':'+d.slice(-2):d}});
 for(let i=1;i<=28;i++)$('pd').add(new Option(i,i));
 if(T[L])document.querySelectorAll('h2,label,button,a,span,small,b,summary').forEach(e=>{if(!e.children.length){const s=e.textContent.trim();if(T[L][s])e.textContent=T[L][s]}});
 document.documentElement.lang=T[L]?L:'es';home();if(!S.plate)show('set');setInterval(tick,30000);if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
